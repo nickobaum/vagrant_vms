@@ -1,0 +1,20 @@
+# deploy location
+vms_directory: "/opt/vagrant_vms/playbooks"
+vagrant_dir: "{{ vms_directory }}/run_b_clean"
+log_dir: "{{ vagrant_dir }}/vm_log"
+
+# remote host config
+box: 'ubuntu/trusty64'
+hostname: 'clean'
+ram: 3072
+cpus: 2
+
+# bridged network config ( 'b_' - stands for bridged )
+b_virt_iface: "virt_iface0"
+b_netmask: "255.255.255.0"
+b_prefix: "24"
+b_remote_ip: "40.40.40.40"
+b_host_ip: "40.40.40.1"
+
+# dns
+vagrant_init_dns_nameserver: 8.8.8.8

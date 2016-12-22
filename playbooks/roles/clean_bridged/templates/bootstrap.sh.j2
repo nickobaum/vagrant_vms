@@ -1,0 +1,3 @@
+#!/bin/bash
+sudo sh -c 'echo "nameserver {{ vagrant_init_dns_nameserver }}" > /etc/resolvconf/resolv.conf.d/base'
+sudo sh -c 'echo "LC_ALL=\"en_US.UTF-8\""  >  /etc/default/locale'

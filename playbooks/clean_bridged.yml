@@ -1,0 +1,6 @@
+---
+- hosts: localhost
+  tasks:
+    - shell: echo "hello world"
+  roles:
+    - clean_bridged

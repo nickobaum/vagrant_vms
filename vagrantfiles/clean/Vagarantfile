@@ -1,0 +1,21 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+
+
+VAGRANTFILE_API_VERSION = "2"
+
+Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
+
+ config.vm.define "node" do |node|
+   node.vm.host_name = "node"
+   node.vm.box = "ubuntu/trusty64"
+   node.vm.provider :virtualbox do |v|
+     v.customize [
+         "modifyvm", :id,
+         "--memory", 4096,
+         "--cpus", 2,
+     ]
+   end
+ end
+end

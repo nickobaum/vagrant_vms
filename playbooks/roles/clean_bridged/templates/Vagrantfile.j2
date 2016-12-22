@@ -1,0 +1,45 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+#
+# Author: Nick Baum <nickbaum069@gmail.com>
+#
+#
+
+VAGRANTFILE_API_VERSION = "2"
+
+# Please modify the following variables:
+# note: you can add a 'bootstrap.sh' file if needed.
+
+Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
+	config.vm.define 'clean' do |nodeconfig|
+		nodeconfig.vm.box = "{{ box }}"
+		nodeconfig.vm.hostname = "{{ hostname }}"
+		# Configure networking
+		# first, lets configure the ssh forwarded connection.
+		nodeconfig.vm.network :forwarded_port, guest: 22, host: 2000, id: 'ssh'
+		# define to the guest machine to whiche interface it going be bridged to.
+		nodeconfig.vm.network "public_network", bridge: "{{ b_virt_iface }}", auto_config: false
+		# configure vm's bridge interface.
+		add_iface_scrap = "ifconfig eth1 " + "{{ b_remote_ip }}" + " netmask " + "{{ b_netmask }}" + " up"
+        	nodeconfig.vm.provision "shell",
+          		inline: add_iface_scrap
+		# delete the default gateway
+		nodeconfig.vm.provision "shell",
+			inline: "ip route delete default"
+		# config the gw to be the host's bridged interface
+		nodeconfig.vm.provision "shell",
+			inline: "ip route add default via {{ b_host_ip }} dev eth1"
+
+		# Configure machines specs
+		nodeconfig.vm.provider :virtualbox do |vb|
+			vb.customize [
+       				"modifyvm", :id,
+       				"--memory", {{ ram }},
+       				"--cpus", {{ cpus }},
+     			]
+   		end
+	end
+
+	config.vm.provision :shell, :path => "bootstrap.sh"
+
+end

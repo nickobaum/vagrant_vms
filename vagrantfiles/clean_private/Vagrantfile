@@ -1,0 +1,36 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+#
+# Author: Nick Baum <nickbaum069@gmail.com>
+#
+#
+
+VAGRANTFILE_API_VERSION = "2"
+
+# Please modify the following variables:
+# note: you can add a 'bootstrap.sh' file if needed.
+box = 'ubuntu/trusty64'
+hostname = 'clean'
+ip_address = '40.40.40.40'
+ram = 3072
+cpus = 2
+
+Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
+	config.vm.define 'clean' do |nodeconfig|
+		nodeconfig.vm.box = box
+		nodeconfig.vm.hostname = hostname
+		# Configure networking
+		nodeconfig.vm.network "private_network", ip: ip_address
+		# Configure machines specs
+		nodeconfig.vm.provider :virtualbox do |vb|
+			vb.customize [
+       				"modifyvm", :id,
+       				"--memory", ram,
+       				"--cpus", cpus,
+     			]
+   		end
+	end
+
+	#config.vm.provision :shell, :path => "bootstrap.sh"
+
+end

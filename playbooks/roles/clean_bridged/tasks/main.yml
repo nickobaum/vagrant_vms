@@ -1,0 +1,60 @@
+---   
+# TODO: update local iptables. forward the traffic from the guest machine to the external network.
+- name: "create directory"
+  file: path="{{ item }}" state=directory
+  with_items:
+  - "{{ vagrant_dir }}"
+  - "{{ log_dir }}"
+
+- name: "Add Vagrant run-time configurations"
+  template:
+    src: "{{ item }}.j2"
+    dest: "{{ vagrant_dir }}/{{ item }}"
+    owner: root
+    group: root
+  with_items:
+  - Vagrantfile
+  - bootstrap.sh
+  tags:
+  - conf
+  
+- name: "Remove previous virtual bridge interface"
+  shell:
+    "{{ item }}"
+  args:
+    chdir: "{{ vagrant_dir }}"
+  with_items:
+  - "[ $(ip a | grep {{ b_virt_iface }} | wc -l) -ge 1 ] && ip link set dev {{ b_virt_iface }} down || /bin/true"
+  - "[ $(ip a | grep {{ b_virt_iface }} | wc -l) -ge 1 ] && ip link delete {{ b_virt_iface }} || /bin/true"
+  - "modprobe -r dummy"
+  tags:
+  - virt_iface
+
+- name: "Add virtual bridge interface for the Vagrant machines"
+  shell:
+    "{{ item }}"
+  args:
+    chdir: "{{ vagrant_dir }}"
+  with_items:
+  - "modprobe dummy"
+  - "ip link set name {{ b_virt_iface }} dev dummy0"
+  - "ip link set dev {{ b_virt_iface }} up"
+  - "ifconfig {{ b_virt_iface }} up"
+  - "ifconfig {{ b_virt_iface }} promisc"
+  - "ifconfig {{ b_virt_iface }} arp"
+  tags:
+  - virt_iface
+
+- name: "Add virtual bridge addresses for the Vagrant machines"
+  shell:
+    "[ $(ip a | grep '{{ b_host_ip }}' | wc -l) -eq 0 ] && ip addr add '{{ b_host_ip }}/{{ b_prefix }}' brd + dev {{ b_virt_iface }} label {{ b_virt_iface }}:01 || /bin/true"
+  args:
+    chdir: "{{ vagrant_dir }}"
+  tags:
+  - virt_iface
+
+- name: "Instantiate virtual machines"
+  shell:
+    "vagrant up >> {{ log_dir }}/vagrant.log 2>&1"
+  args:
+    chdir: "{{ vagrant_dir }}"
